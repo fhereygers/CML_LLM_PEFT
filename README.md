@@ -1,54 +1,76 @@
-# Workspace Reqs
-- CML CPU Workers: 	m4.2xlarge
-  - Really any CPU type is suitable
-- CML GPU Workers:	p3.8xlarge
-  - This has 4 gpus per instance, we will use 3 for finetuning so this will save time on worker spinup
+# LLM Task Fine-tuning in CML with PEFT
 
-# Project Reqs
-- Clone this project by cloning from Git
-- Make sure to enable only the PBJ Python 3.9 GPU Runtime
+This repository demonstrates how an open source LLM (Large Language Model) can be efficiently fine-tuned for a variety of tasks using PEFT and distribution techniques on curated datasets.
 
-# Stage 0: Install Prereqs
-- Launch a Session with at least 2 CPU, 4 MEM (No GPU needed)
-- Run file 0_install-requirements.py
+## Why Fine-tune a Foundation LLM?
+While foundation LLMs are powerful and can generate very convincing language as a result of expensive and extensive training, they are not always suited for the specific downstream tasks that a generative AI application may require.
 
-# Stage 1: Finetuning Example (Skippable: see Stage 2 LORA_ADAPTERS_DIR)
+In a previous [CML AMP (LLM_Chatbot_Augmented_with_Enterprise_Data)](https://github.com/cloudera/CML_AMP_LLM_Chatbot_Augmented_with_Enterprise_Data) our document chat bot required the use of an open source LLM that was already fine-tuned for "instruction following" tasks. This instruction-following LLM was the product of fine-tuning an LLM on a dataset that included a variety of examples of differenct instruction interactions. The application architecture we implemented in the AMP supplied facts and context to the fine-tuned LLM via prompting, and the fine-tuned LLM generated text in a pattern that appropriately fit the instructions provided.
 
-- Launch a Session with 2 CPU, 4 MEM, 1 GPU
-- Run file 1_launch_all_fine_tuning.py
-  - Start with small Bloom foundation model
-  - Perform LoRA fine-tuning using 3 different datasets targetted for different kinds of tasks
-  - Finetuning runs distributed accross 3 GPUs for time optimization
-  - Output is 3 dirs inside ./adapters/ each containining a DIFFERENT LoRA Adapter
-- During and after Fine-tuning you can view metrics via tensorboard dashboards via the Session App link
-  - To see learning rates, time to completion, etc
-- Session can be closed after completion if desired
-  
-Datasets used:
-https://huggingface.co/datasets/qwedsacf/grade-school-math-instructions
-https://huggingface.co/datasets/teknium/GPTeacher-General-Instruct
-https://huggingface.co/datasets/s-nlp/paradetox
+\< Make point about bespoke tasks one might want to fine-tune for \>
 
-# Stage 2: Adapter Playground App 
-- Launch a Session with 2 CPU, 4 MEM, 1 GPU
-- Run file 2_app.py
-- Uses cached adapters trained ahead of time
-  - change LORA_ADAPTERS_DIR to use newly fine-tuned adapters from Stage 1
+## Fine-tuning optimization techniques
+In this AMP we show how you can use cutting edge fine-tuning techniques to effictiently produce adapters finetuned for language tasks in CML.
+### PEFT
+PEFT (Parameter-Efficient Fine-Tuning) are a class of fine-tuning techniques which allow for the effecient adaptation of LLMs to downstream tasks, training only a small amount of extra model parameters. 
 
+Full fine-tuning is effective and has been the default way to apply different learnings and tasks to language models, but is now seen as grossly inefficient due to the ballooning size of LLMs. PEFT techniques offer much more efficiecnt processes and more portable results by allowing for two major improvements:
+- **Computation constraints:** Training only small modules sized at a fraction of the original model's weights with more efficient representations. Meaning less video memory and time required on expensive GPUs.
+- **Portability:** Most PEFT techniques result in 
 
-## Example
-Given a prompt with special  token like an assistant chat
+There are a varierty of PEFT methodologies being researched today and many are being implemented in the [huggingface PEFT library](https://github.com/huggingface/peft) for easy access.
 
-`<Instruction>: Use the provided text to answer the question. Does CML enable self-service data science?
-<Input>: Cloudera Machine Learning is Cloudera’s cloud-native machine learning platform built for CDP. Cloudera Machine Learning unifies self-service data science and data engineering in a single, portable service as part of an enterprise data cloud for multi-function analytics on data anywhere.
-<Response>: `
+#### QLoRA
+One of the PEFT techniques available in the huggingface library is QLoRA (Quantized Low Rank Adaptation). This fine-tuning technique is the result of two papers, the original [LoRA](https://arxiv.org/abs/2106.09685) and following [QLoRA](https://arxiv.org/abs/2305.14314).
 
-The foundation model produces random text like
+- LoRA fine-tuning freezes the original model parameters and trains a new small set of parameters with an dataset, at lower memory footprint and time therefore lower cost for still very effective leraning.
 
-`The response will be sent back to the user via email or SMS.  If you are not sure what your response should look like, please contact us at [email protected]`
+- QLoRA further increased efficiency, by using a new quantized data type and additional quanitization and memory optimization techniques to further drive the time and cost down.
 
-But we would like to see generated text like
+This allows us to use lower cost GPUs at a fraction of the time compared to full parameter fine-tuning, while still matching the performance of more intensive and costly full fine-tuning.
 
-`CML enables selfservice data science by leveraging its powerful AI-powered machine learning capabilities that seamlessly integrate with existing data pipelines and tools. This allows users to leverage their own expertise and experience to create customized solutions tailored to specific needs.`
-> NOTE: The above is not perfect and slightly hallucinatory, but on the right track to usable output for this task, tuned on a tiny subet of a dataset.
+### Distributed Training
+Using the PEFT open-source library from Huggingface means we also have easy access to [accelerate](https://github.com/huggingface/accelerate). Another Huggingface library which abstracts away the use of multiple GPUs and machines for fine-tuning jobs. As with many other kinds of distributed workloads, this cuts down on the time to fine-tune dramatically.
 
+# AMP
+## Overview
+In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface.
+
+These fine-tuning jobs are  
+
+outline the thigns implemented, training scripts, distribution infra with workers etc
+## Target Fine-tuned Tasks
+describe 3 tasks we finetune for
+mention the speed and scale
+reiterate these tasks represent bespoke tasks that may be specific in pattern or usecase for a user/customer
+## Open Source Models and Datasets:
+### Base LLM Model
+- https://huggingface.co/bigscience/bloom-1b1
+
+### Datasets
+- https://huggingface.co/datasets/teknium/GPTeacher-General-Instruct
+  - Contains 89k examples of instruction-input-response text
+- https://huggingface.co/datasets/s-nlp/paradetox
+  - Contains 19k examples of toxic to neutral language conversions
+- https://huggingface.co/datasets/philschmid/sql-create-context-copy
+  - Contains 78k examples of natural language and sql query translations
+
+# Workspace Requirements
+- CML CPU Workers: 	1+ m4.2xlarge or larger recommended
+  - This AMP is not CPU intensive so workspaces with smaller CPU instance types 
+- CML GPU Workers:	1+ p3.4xlarge or larger required
+  - nVidia V100 is required for this AMP
+  - A single gpu will run fine-tuning examples only in non-distributed mode
+  - Multiple gpus will be required to run fine-tuning examples distributed accross multiple CML: sessopms.
+
+## Setup 
+### Runtime
+ < suggested runtime and etc >
+### GPU distribution
+**NUM_GPU_WORKERS:** TConfigurable project environment variable set up for this AMP. This is the number of distributed GPUs that the fine-tuning jobs will make use of during runtime.
+
+## Implementation Details
+<<< Link to README.md under distributed_peft_scripts >>>
+
+## Notebook Example
+A notebook example is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script. [Notebook Link](fine_tune_sample.ipynb)

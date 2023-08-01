@@ -5,6 +5,7 @@ from peft import LoraConfig
 cache_dir = common_ft.get_unique_cache_dir()
 
 # The first X% of `train` split.
+# With 2 V100 GPUs and the training options selected below, fine-tuning on this portion of the dataset takes approximately 10 minutes
 dataset_fraction = 100
 data = datasets.load_dataset('s-nlp/paradetox', split=f'train[:{dataset_fraction}%]', cache_dir=cache_dir)
 

@@ -5,6 +5,7 @@ from peft import LoraConfig
 cache_dir = common_ft.get_unique_cache_dir()
 
 # The first X% of `train` split.
+# With 2 V100 GPUs and the training options selected below, fine-tuning on this portion of the dataset takes approximately 30 minutes
 dataset_fraction = 30
 data = datasets.load_dataset('teknium/GPTeacher-General-Instruct', split=f'train[:{dataset_fraction}%]', cache_dir=cache_dir)
 

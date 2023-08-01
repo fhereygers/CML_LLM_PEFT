@@ -55,8 +55,11 @@ def get_responses(adapter_select, prompt, max_new_tokens, temperature, repetitio
     lora_generation = generate(prompt, max_new_tokens, temperature, repetition_penalty)
   return (gr.Textbox.update(value=base_generation, visible=True), gr.Textbox.update(value=lora_generation, visible=True))
 
-  
-with gr.Blocks() as demo:
+theme = gr.themes.Default().set(
+    block_title_padding='*spacing_md',
+)
+
+with gr.Blocks(theme=theme) as demo:
     with gr.Row():
         gr.Markdown("# Fine-tuned LLM Adapters For Multiple Tasks")
     with gr.Column():
@@ -167,7 +170,7 @@ with gr.Blocks() as demo:
     import time
     def set_usecase(usecase):
         # Slow user down to highlight changes
-        time.sleep(1)
+        time.sleep(0.5)
         if "General Instruction-Following" in usecase:
             return (gr.Textbox.update(value="bloom1b1-lora-instruct", visible=True), gr.Button.update(interactive=True))
         elif "Generate SQL given a question and table" in usecase:

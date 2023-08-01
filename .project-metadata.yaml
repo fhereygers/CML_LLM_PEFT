@@ -1,6 +1,6 @@
 name: Parameter Efficient Fine Tuning for Custom Tasks
 description: |
-  This AMP demonstrates how PEFT and other optimization techniques can be used for efficient and effective customization of an existing LLM to perform new tasks.
+  This AMP demonstrates how PEFT and other fine-tuning optimization techniques can be used for efficient and effective customization of an existing LLM to perform new tasks.
 author: Cloudera Inc.
 specification_version: 1.0
 prototype_version: 1.0
@@ -10,8 +10,8 @@ environment_variables:
   NUM_GPU_WORKERS:
     default: "2"
     description: >-
-      The number of individual worker sessions that will be used for distributed fine-tuning.
-      NOTE: At least this many GPUs must be available for deployment in this workspace.
+      The number of GPUs that will be used for distributed fine-tuning.
+      NOTE: At least this many GPUs must be available for concurrent deployment in this workspace.
 
 runtimes:
   - editor: Workbench
@@ -20,8 +20,8 @@ runtimes:
 
 tasks:
   - type: run_session
-    name: Validate GPU Availibility
-    script: 1_session-resource-validation/check_gpu_resources.py
+    name: Validate GPU Availibility in this workspace
+    script: 0_session-configuration-validation/check_gpu_resources.py
     short_summary: Check for GPU availibility. 
     long_summary: Check GPUs are enabled on this workspace and are currently schedulable.
     kernel: python3
@@ -30,15 +30,15 @@ tasks:
 
   - type: run_session
     name: Install Dependencies
-    script: 0_session-install-deps/install-requirements.py
+    script: 1_session-install-deps/install-requirements.py
     short_summary: Install Dependencies
     kernel: python3
     cpu: 2
     memory: 8
   
   - type: run_session
-    name: Validate GPU Capability
-    script: 1_session-resource-validation/check_gpu_capability.py
+    name: Validate GPU CUDA Capability
+    script: 2_session-resource-validation/check_gpu_capability.py
     short_summary: Check for GPU capability. 
     long_summary: Check GPU device supports the CUDA capabilities required.
     kernel: python3
@@ -49,9 +49,9 @@ tasks:
   - type: create_job
     name: Create Job for fine-tuning on Instruction Dataset
     entity_label: fine_tune_instruct
-    script: 2_job-fine-tune/job-instruction.py
+    script: 3_job-fine-tune/job-instruction.py
     arguments: None
-    long_summary: Create job to fine-tune an LLM on a subset of the teknium/GPTeacher-General-Instruct dataset. This job will not be automatically launched during AMP startup. A sample LoRA adapter is included in the git repository.
+    long_summary: Create job to fine-tune an LLM on a subset of the teknium/GPTeacher-General-Instruct dataset. This job will not be automatically launched during AMP startup. A sample LoRA adapter fine-tuned with this job script and dataset is included in the git repository.
     cpu: 2
     memory: 8
     gpu: 1
@@ -61,9 +61,9 @@ tasks:
   - type: create_job
     name: Create Job for fine-tuning on SQL Generation Dataset
     entity_label: fine_tune_sql
-    script: 2_job-fine-tune/job-sql.py
+    script: 3_job-fine-tune/job-sql.py
     arguments: None
-    long_summary: Create job to fine-tune an LLM on the philschmid sql-create-context-copy dataset. This job will not be automatically launched during AMP startup. A sample LoRA adapter is included in the git repository.
+    long_summary: Create job to fine-tune an LLM on the philschmid sql-create-context-copy dataset. This job will not be automatically launched during AMP startup. A sample LoRA adapter fine-tuned with this job script and dataset is included in the git repository.
     cpu: 2
     memory: 8
     gpu: 1
@@ -73,7 +73,7 @@ tasks:
   - type: create_job
     name: Create Job for fine-tuning on Detox Dataset
     entity_label: fine_tune_detox
-    script: 2_job-fine-tune/job-instruction.py
+    script: 3_job-fine-tune/job-instruction.py
     arguments: None
     long_summary: Create job to fine-tune an LLM on the s-nlp/paradetox dataset 
     cpu: 2
@@ -89,7 +89,7 @@ tasks:
   - type: start_application
     name: CML LLM Fine-Tuned Task Explorer
     subdomain: cml-task
-    script: 3_app-task-explorer/task-explorer.py
+    script: 4_app-task-explorer/task-explorer.py
     long_summary: This application requires an available GPU to run the LLM model and LoRA adapters.
     cpu: 2
     memory: 16
