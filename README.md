@@ -36,9 +36,7 @@ Using the PEFT open-source library from Huggingface means we also have easy acce
 ## Overview
 In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface.
 
-These fine-tuning jobs are  
-
-outline the thigns implemented, training scripts, distribution infra with workers etc
+The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in (adapters_prebuilt)[adapters_prebuilt]
 ## Target Fine-tuned Tasks
 describe 3 tasks we finetune for
 mention the speed and scale
