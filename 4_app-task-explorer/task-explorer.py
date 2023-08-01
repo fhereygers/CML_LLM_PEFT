@@ -53,95 +53,75 @@ def get_responses(adapter_select, prompt, max_new_tokens, temperature, repetitio
     lora_generation = ""
   else:
     lora_generation = generate(prompt, max_new_tokens, temperature, repetition_penalty)
-  return (gr.Textbox.update(value=base_generation, visible=True), gr.Textbox.update(value=lora_generation, visible=True))
+  return (gr.Textbox.update(value=base_generation, visible=True,  lines=10), gr.Textbox.update(value=lora_generation, visible=True,  lines=10))
 
 theme = gr.themes.Default().set(
     block_title_padding='*spacing_md',
+    block_title_text_size='*text_lg',
+
 )
 
-with gr.Blocks(theme=theme) as demo:
+css = """
+"""
+
+with gr.Blocks(theme=theme, css=css) as demo:
     with gr.Row():
         gr.Markdown("# Fine-tuned LLM Adapters For Multiple Tasks")
-    with gr.Column():
-        with gr.Box():
-            with gr.Row():
-                with gr.Column():
-                    with gr.Row():
-                        gr.Markdown("## Use Case")
-                    usecase_select = gr.Dropdown(["General Instruction-Following", "Generate SQL given a question and table", "Detoxify Statement"], value="Please select a task to complete...", label="Generative AI Task", interactive=True)
-                    input_txt = gr.Textbox(label="Engineered Prompt", value="Select a task example above to edit...", lines=8, interactive=False)
-                    with gr.Accordion("Advanced Generation Options", open=False):
-                        with gr.Column():
-                            with gr.Row():
-                                max_new_tokens = gr.Slider(
-                                    minimum=0, maximum=256, step=1, value=50,
-                                    label="Max New Tokens",
-                                )
-                                num_beams = gr.Slider(
-                                    minimum=1, maximum=10, step=1, value=1,interactive=False,
-                                    label="Num Beams (wip)",
-                                )
-                                repetition_penalty = gr.Slider(
-                                    minimum=0.01, maximum=4.5, step=0.01, value=1.1,
-                                    label="Repeat Penalty",
-                                )
-
-                            with gr.Row():
-                                temperature = gr.Slider(
-                                    minimum=0.01, maximum=1.99, step=0.01, value=0.7,
-                                    label="Temperature",
-                                )
-
-                                top_p = gr.Slider(
-                                    minimum=0, maximum=1, step=0.01, value=1.0, interactive=False,
-                                    label="Top P (wip)",
-                                )
-
-                                top_k = gr.Slider(
-                                    minimum=0, maximum=200, step=1, value=0, interactive=False,
-                                    label="Top K (wip)",
-                                )
+    with gr.Row():
+         with gr.Box():
+                with gr.Row():
+                    with gr.Column():
+                        usecase_select = gr.Radio(["General Instruction-Following", "Generate SQL given a question and table", "Detoxify Statement"], value="Please select a task to complete...", label="Generative AI Task", interactive=True)
                     
-                with gr.Column():
-                    with gr.Row():
-                        gr.Markdown("## Inference")
-                    with gr.Row():
-                        with gr.Column():
-                            base_model = gr.TextArea(label="\tBase Model", value="bigscience/bloom1b1", container = False, lines=1, visible=True, interactive=False)
-                            output_plain_txt = gr.Textbox(value="", label="Inference", lines=1, visible=False)
-                    with gr.Row():
-                        with gr.Column():
-                            adapter_select = gr.TextArea(label="\tPEFT[LoRA] Adapter", container = False, value="...", lines=1, visible=True, interactive=False)
-                            output_adapter_txt = gr.Textbox(value="", label="Inference",lines=1, visible=False)
-                    with gr.Row():
-                        with gr.Column():
-                            clear_btn = gr.ClearButton(value="Reset", components=[], queue=False)
+                        with gr.Row():
+                            with gr.Row(variant="panel"):
+                                with gr.Column():
+                                    base_model = gr.TextArea(label="\tBase Model", value="bigscience/bloom1b1", container = False, lines=1, visible=True, interactive=False)
+                                with gr.Column():
+                                    adapter_select = gr.TextArea(label="\tPEFT[LoRA] Adapter", container = False, value="...", lines=1, visible=True, interactive=False)
+                        input_txt = gr.Textbox(label="Engineered Prompt", value="Select a task example above to edit...", lines=8, interactive=False)
+                        with gr.Accordion("Advanced Generation Options", open=False):
+                            with gr.Column():
+                                with gr.Row():
+                                    max_new_tokens = gr.Slider(
+                                        minimum=0, maximum=256, step=1, value=50,
+                                        label="Max New Tokens",
+                                    )
+                                    num_beams = gr.Slider(
+                                        minimum=1, maximum=10, step=1, value=1,interactive=False,
+                                        label="Num Beams (wip)",
+                                    )
+                                    repetition_penalty = gr.Slider(
+                                        minimum=0.01, maximum=4.5, step=0.01, value=1.1,
+                                        label="Repeat Penalty",
+                                    )
+
+                                with gr.Row():
+                                    temperature = gr.Slider(
+                                        minimum=0.01, maximum=1.99, step=0.01, value=0.7,
+                                        label="Temperature",
+                                    )
+
+                                    top_p = gr.Slider(
+                                        minimum=0, maximum=1, step=0.01, value=1.0, interactive=False,
+                                        label="Top P (wip)",
+                                    )
+
+                                    top_k = gr.Slider(
+                                        minimum=0, maximum=200, step=1, value=0, interactive=False,
+                                        label="Top K (wip)",
+                                    )
+                    with gr.Column(variant="panel"):
+                        with gr.Row():
+                            output_adapter_txt = gr.Textbox(value="", label="Base Model Inference",lines=1, interactive=False, visible=True, placeholder="...", container = False)
+                        with gr.Row():
+                            output_plain_txt = gr.Textbox(value="", label="PEFT[LoRA] Adapter Inference", lines=1, interactive=False, visible=True, placeholder="...", container = False)
+                        with gr.Row():
                             gen_btn = gr.Button(value="Generate", variant="primary", interactive=False)
+                            clear_btn = gr.ClearButton(value="Reset", components=[], queue=False)
+                        
+             
 
-
-
-    with gr.Accordion("Documentation", open=False):
-        with gr.Row():
-            gr.Markdown("# Prompt Examples")
-        with gr.Row():
-            gr.Markdown("Each of the demo LoRA adapters has been fine-tuned using techniques optimized for cost and time. Even the simple and fast fine-tuning demonstrated in the tutorial code show initial progress in performing bespoke tasks better than the original small foundation model bloom-1b1.")
-        with gr.Row():
-            gr.Markdown("#### Select an Task Adapter in the dropdown above to load an example and click generate to compare inference on the foundation bloom-1b1 model and the fine-tuned adapters.")
-
-        
-        with gr.Row():
-            with gr.Column():
-                gr.Markdown("## General Instruction-Following (bloom1b1-lora-instruct)")
-                gr.Markdown("This demo bloom-1b1_lora_instruct LoRA adapter has been fine-tuned on a fraction of the --- dataset to attempt some intial ability at following instructions.")
-
-            with gr.Column():
-                gr.Markdown("## Generate simple SQL (bloom1b1-lora-sql)")
-                gr.Markdown("This demo bloom1b1-lora-sql LoRA adapter has been fine-tuned on the on a fraction of the --- dataset to generate valid SQL queries for a question about a given table.")
-
-            with gr.Column():
-                gr.Markdown("## Detoxify a passage (bloom1b1-lora-toxic)")
-                gr.Markdown("This demo bloom1b1-lora-toxic LoRA adapter has been fine-tuned on a fraction of the --- dataset to detoxify a passage by rephrasing or removing toxic language.")
-        
     examples_params_list= [input_txt, repetition_penalty, temperature, max_new_tokens]
     example_tuple = namedtuple("example_named",["input_txt", "repetition_penalty", "temperature", "max_new_tokens", "placeholder_txt"])
     ex_instruct = example_tuple("<Instruction>: Answer the question using the provided input, be concise. How does CML unify self-service data science and data engineering?\n\n<Input>: Cloudera Machine Learning is Cloudera’s cloud-native machine learning platform built for CDP. Cloudera Machine Learning unifies self-service data science and data engineering in a single, portable service as part of an enterprise data cloud for multi-function analytics on data anywhere.\n\n<Response>:", 0.99, 0.75, 33, "")
@@ -165,8 +145,8 @@ with gr.Blocks(theme=theme) as demo:
                 gr.Slider.update(value=update_tuple.repetition_penalty),
                 gr.Slider.update(value=update_tuple.temperature),
                 gr.Slider.update(value=update_tuple.max_new_tokens),
-                gr.Textbox.update(value="", visible=False),
-                gr.Textbox.update(value="", visible=False))
+                gr.Textbox.update(value="", visible=True, lines=1),
+                gr.Textbox.update(value="", visible=True, lines=1))
     import time
     def set_usecase(usecase):
         # Slow user down to highlight changes
@@ -182,7 +162,7 @@ with gr.Blocks(theme=theme) as demo:
     
     def clear_out():
         empty_example = set_example("")
-        cleared_tuple = empty_example + (gr.TextArea.update(value="..."), gr.TextArea.update(value="", visible=False), gr.Textbox.update(value="", visible=False), gr.Textbox.update(value="Please select a fine-tuned adapter...")) 
+        cleared_tuple = empty_example + (gr.TextArea.update(value="..."), gr.TextArea.update(value="", lines=1), gr.Textbox.update(value="", lines=1), gr.Textbox.update(value="Please select a fine-tuned adapter...")) 
         return cleared_tuple
     
     def show_outputs():
