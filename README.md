@@ -36,8 +36,13 @@ Using the PEFT open-source library from Huggingface means we also have easy acce
 ## Overview
 In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface.
 
-The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in (adapters_prebuilt)[adapters_prebuilt]
-## Target Fine-tuned Tasks
+The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in [./adapters_prebuilt](./adapters_prebuilt).
+## Target Fine-tuned Tasks*
+For each the following fine-tuning tasks we start with the *smaller* LLM bigscience/bloom-1b1 which comes in at 2.13 GB. Each adapter is fine-tuned on a publicly available dataset that has been mapped to fit the input and output patterns desired.
+### General Instruction Following
+### SQL English to Query
+### Detoxifying English Text
+
 describe 3 tasks we finetune for
 mention the speed and scale
 reiterate these tasks represent bespoke tasks that may be specific in pattern or usecase for a user/customer

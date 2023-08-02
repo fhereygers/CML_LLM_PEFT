@@ -7,17 +7,32 @@ from glob import glob
 from collections import namedtuple 
 
 
-LORA_ADAPTERS_DIR = "./adapters_prebuilt"
-if os.path.exists(LORA_ADAPTERS_DIR):
-  print("Found adapters")
+PREBUILT_LORA_ADAPTERS_DIR = "./adapters_prebuilt"
+if os.path.exists(PREBUILT_LORA_ADAPTERS_DIR):
+  print("Found prebuilt adapters dir")
   
-lora_adapters = glob(LORA_ADAPTERS_DIR+"/*/", recursive = False)
+prebuilt_lora_adapter_dirs = glob(PREBUILT_LORA_ADAPTERS_DIR+"/*/", recursive = False)
 
+CUSTOM_LORA_ADAPTERS_DIR = os.getenv("CUSTOM_LORA_ADAPTERS_DIR")
+if os.path.exists(CUSTOM_LORA_ADAPTERS_DIR):
+  print("Found custom adapters dir")
+  
+custom_lora_adapter_dirs = glob(CUSTOM_LORA_ADAPTERS_DIR+"/*/", recursive = False)
 
 model = AutoModelForCausalLM.from_pretrained("bigscience/bloom-1b1", return_dict=True, device_map='auto')
 tokenizer = AutoTokenizer.from_pretrained("bigscience/bloom-1b1")
 
-for adapter in lora_adapters:
+all_lora_adapter_dirs = prebuilt_lora_adapter_dirs + custom_lora_adapter_dirs
+
+# List of generative AI usecases to display in the UI, mapped to adapter folder path
+# Custom adapters located in CUSTOM_LORA_ADAPTERS_DIR will be appended to this list as Custom Adapter: [adapter-dir-name]
+# Custom adapters will not have sample engineered prompts autofilled
+
+usecase_adapter_dict = {"General Instruction-Following":"bloom1b1-lora-instruct", "Generate SQL given a question and table":"bloom1b1-lora-sql", "Detoxify Statement":"bloom1b1-lora-toxic"}
+for custom_adapter in custom_lora_adapter_dirs:
+   usecase_adapter_dict["Custom Adapter: %s" % custom_adapter] = custom_adapter
+
+for adapter in all_lora_adapter_dirs:
   name = adapter_name=os.path.basename(adapter.strip("/"))
   # See https://github.com/huggingface/peft/issues/211
   # This is a PEFT Model, we can load another adapter
@@ -26,6 +41,7 @@ for adapter in lora_adapters:
   # This is a regular AutoModelForCausalLM, we should use PeftModel.from_pretrained for this first adapter load
   else:
     model = PeftModel.from_pretrained(model=model, model_id=adapter, adapter_name=name)
+  print("Loaded PEFT Adapter: %s" % name)
 
 loaded_adapters = list(model.peft_config.keys())
 
@@ -42,17 +58,20 @@ def get_responses(adapter_select, prompt, max_new_tokens, temperature, repetitio
   with model.disable_adapter():
     base_generation = generate(prompt, max_new_tokens, temperature, repetition_penalty)
   
-  if "bloom1b1-lora-instruct" in adapter_select:
+  if adapter_select == "bloom1b1-lora-instruct":
     model.set_adapter("bloom1b1-lora-instruct")
-  elif "bloom1b1-lora-sql" in adapter_select:
+  elif adapter_select == "bloom1b1-lora-sql":
     model.set_adapter("bloom1b1-lora-sql")
-  elif "bloom1b1-lora-toxic" in adapter_select:
+  elif adapter_select =="bloom1b1-lora-toxic":
     model.set_adapter("bloom1b1-lora-toxic")
+  else:
+    model.set_adapter(adapter_select)
 
   if "None" in  adapter_select:
     lora_generation = ""
   else:
     lora_generation = generate(prompt, max_new_tokens, temperature, repetition_penalty)
+  print("Generating with  PEFT Adapter: %s" % adapter_select)
   return (gr.Textbox.update(value=base_generation, visible=True,  lines=10), gr.Textbox.update(value=lora_generation, visible=True,  lines=10))
 
 theme = gr.themes.Default().set(
@@ -71,7 +90,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
          with gr.Box():
                 with gr.Row():
                     with gr.Column():
-                        usecase_select = gr.Radio(["General Instruction-Following", "Generate SQL given a question and table", "Detoxify Statement"], value="Please select a task to complete...", label="Generative AI Task", interactive=True)
+                        usecase_select = gr.Radio(list(usecase_adapter_dict.keys()), value="Please select a task to complete...", label="Generative AI Task Example", interactive=True)
                     
                         with gr.Row():
                             with gr.Row(variant="panel"):
@@ -128,15 +147,21 @@ with gr.Blocks(theme=theme, css=css) as demo:
     ex_sql = example_tuple("<TABLE>: CREATE TABLE jedi (id VARCHAR, lightsaber_color VARCHAR)\n<QUESTION>: Give me a list of jedi that have gold color lightsabers.\n<SQL>: ", 1.15, 0.8, 14, "")
     ex_toxic = example_tuple("<Toxic>: I hate Obi Wan, he always craps on me about the dark side of the force.\n<Neutral>: ", 1.22, 0.75, 19, "")
     ex_empty = example_tuple("",1.0, 0.7, 50,"Select a task example above to edit...")
+    ex_custom = example_tuple("",1.0, 0.7, 50,"")
 
     def set_example(adapter):
         interactive_prompt = True
-        if "bloom1b1-lora-instruct" in adapter:
-            update_tuple = ex_instruct
-        elif "bloom1b1-lora-sql" in adapter:
-            update_tuple = ex_sql
-        elif "bloom1b1-lora-toxic" in adapter:
-            update_tuple = ex_toxic
+        # Set example inputs (prompt, inference options) for known usecases and custom adapters
+        if adapter in list(usecase_adapter_dict.items()):
+            if "bloom1b1-lora-instruct" in adapter:
+                update_tuple = ex_instruct
+            elif "bloom1b1-lora-sql" in adapter:
+                update_tuple = ex_sql
+            elif "bloom1b1-lora-toxic" in adapter:
+                update_tuple = ex_toxic
+            else:
+               update_tuple = ex_custom
+        # Clear out inputs when UI is reset
         else:
             interactive_prompt = False
             update_tuple = ex_empty
@@ -151,13 +176,9 @@ with gr.Blocks(theme=theme, css=css) as demo:
     def set_usecase(usecase):
         # Slow user down to highlight changes
         time.sleep(0.5)
-        if "General Instruction-Following" in usecase:
-            return (gr.Textbox.update(value="bloom1b1-lora-instruct", visible=True), gr.Button.update(interactive=True))
-        elif "Generate SQL given a question and table" in usecase:
-            return (gr.Textbox.update(value="bloom1b1-lora-sql", visible=True), gr.Button.update(interactive=True))
-        elif "Detoxify Statement" in usecase:
-            return (gr.Textbox.update(value="bloom1b1-lora-toxic", visible=True), gr.Button.update(interactive=True))
-        else:
+        if usecase in usecase_adapter_dict:
+           return (gr.Textbox.update(value=usecase_adapter_dict[usecase], visible=True), gr.Button.update(interactive=True))
+        else: 
             return (gr.TextArea.update(value="...", visible=True), gr.Button.update(interactive=False))
     
     def clear_out():
