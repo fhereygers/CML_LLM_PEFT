@@ -83,7 +83,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
          with gr.Box():
                 with gr.Row():
                     with gr.Column():
-                        usecase_select = gr.Radio(list(usecase_adapter_dict.keys()), value="Please select a task to complete...", label="Generative AI Task Example", interactive=True)
+                        usecase_select = gr.Radio(list(usecase_adapter_dict.keys()), value="Please select a task to complete...", label="Choose a generative AI task", info="Compare Base Model and Fine-tuned PEFT Adapter Responses", interactive=True)
                     
                         with gr.Row():
                             with gr.Row(variant="panel"):
@@ -123,14 +123,14 @@ with gr.Blocks(theme=theme, css=css) as demo:
                                         minimum=0, maximum=200, step=1, value=0, interactive=False,
                                         label="Top K (wip)",
                                     )
-                    with gr.Column(variant="panel"):
-                        with gr.Row():
-                            output_plain_txt = gr.Textbox(value="", label="Base Model Inference",lines=1, interactive=False, visible=True, placeholder="...", container = False)
-                        with gr.Row():
-                            output_adapter_txt = gr.Textbox(value="", label="PEFT[LoRA] Adapter Inference", lines=1, interactive=False, visible=True, placeholder="...", container = False)
                         with gr.Row():
                             gen_btn = gr.Button(value="Generate", variant="primary", interactive=False)
                             clear_btn = gr.ClearButton(value="Reset", components=[], queue=False)
+                    with gr.Column(variant="panel"):
+                        with gr.Row():
+                            output_plain_txt = gr.Textbox(value="", label="Base Model Response",lines=1, interactive=False, visible=True, placeholder="...", container = False)
+                        with gr.Row():
+                            output_adapter_txt = gr.Textbox(value="", label="Fine-tuned PEFT Adapter Response", lines=1, interactive=False, visible=True, placeholder="...", container = False)
                         
              
 
