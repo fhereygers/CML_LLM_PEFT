@@ -1,4 +1,5 @@
 import gradio as gr
+import time
 import os
 import torch
 from peft import PeftModel, PeftConfig
@@ -7,7 +8,7 @@ from glob import glob
 from collections import namedtuple 
 
 
-PREBUILT_LORA_ADAPTERS_DIR = "./adapters_prebuilt"
+PREBUILT_LORA_ADAPTERS_DIR = "adapters_prebuilt"
 if os.path.exists(PREBUILT_LORA_ADAPTERS_DIR):
   print("Found prebuilt adapters dir")
   
@@ -28,20 +29,19 @@ all_lora_adapter_dirs = prebuilt_lora_adapter_dirs + custom_lora_adapter_dirs
 # Custom adapters located in CUSTOM_LORA_ADAPTERS_DIR will be appended to this list as Custom Adapter: [adapter-dir-name]
 # Custom adapters will not have sample engineered prompts autofilled
 
-usecase_adapter_dict = {"General Instruction-Following":"bloom1b1-lora-instruct", "Generate SQL given a question and table":"bloom1b1-lora-sql", "Detoxify Statement":"bloom1b1-lora-toxic"}
+usecase_adapter_dict = {"General Instruction-Following":"adapters_prebuilt/bloom1b1-lora-instruct/", "Generate SQL given a question and table":"adapters_prebuilt/bloom1b1-lora-sql/", "Detoxify Statement":"adapters_prebuilt/bloom1b1-lora-toxic/"}
 for custom_adapter in custom_lora_adapter_dirs:
    usecase_adapter_dict["Custom Adapter: %s" % custom_adapter] = custom_adapter
 
 for adapter in all_lora_adapter_dirs:
-  name = adapter_name=os.path.basename(adapter.strip("/"))
   # See https://github.com/huggingface/peft/issues/211
   # This is a PEFT Model, we can load another adapter
   if hasattr(model, 'load_adapter'):
-    model.load_adapter(adapter, adapter_name=name)
+    model.load_adapter(adapter, adapter_name=adapter)
   # This is a regular AutoModelForCausalLM, we should use PeftModel.from_pretrained for this first adapter load
   else:
-    model = PeftModel.from_pretrained(model=model, model_id=adapter, adapter_name=name)
-  print("Loaded PEFT Adapter: %s" % name)
+    model = PeftModel.from_pretrained(model=model, model_id=adapter, adapter_name=adapter)
+  print("Loaded PEFT Adapter: %s" % adapter)
 
 loaded_adapters = list(model.peft_config.keys())
 
@@ -58,14 +58,7 @@ def get_responses(adapter_select, prompt, max_new_tokens, temperature, repetitio
   with model.disable_adapter():
     base_generation = generate(prompt, max_new_tokens, temperature, repetition_penalty)
   
-  if adapter_select == "bloom1b1-lora-instruct":
-    model.set_adapter("bloom1b1-lora-instruct")
-  elif adapter_select == "bloom1b1-lora-sql":
-    model.set_adapter("bloom1b1-lora-sql")
-  elif adapter_select =="bloom1b1-lora-toxic":
-    model.set_adapter("bloom1b1-lora-toxic")
-  else:
-    model.set_adapter(adapter_select)
+  model.set_adapter(adapter_select)
 
   if "None" in  adapter_select:
     lora_generation = ""
@@ -132,9 +125,9 @@ with gr.Blocks(theme=theme, css=css) as demo:
                                     )
                     with gr.Column(variant="panel"):
                         with gr.Row():
-                            output_adapter_txt = gr.Textbox(value="", label="Base Model Inference",lines=1, interactive=False, visible=True, placeholder="...", container = False)
+                            output_plain_txt = gr.Textbox(value="", label="Base Model Inference",lines=1, interactive=False, visible=True, placeholder="...", container = False)
                         with gr.Row():
-                            output_plain_txt = gr.Textbox(value="", label="PEFT[LoRA] Adapter Inference", lines=1, interactive=False, visible=True, placeholder="...", container = False)
+                            output_adapter_txt = gr.Textbox(value="", label="PEFT[LoRA] Adapter Inference", lines=1, interactive=False, visible=True, placeholder="...", container = False)
                         with gr.Row():
                             gen_btn = gr.Button(value="Generate", variant="primary", interactive=False)
                             clear_btn = gr.ClearButton(value="Reset", components=[], queue=False)
@@ -149,18 +142,18 @@ with gr.Blocks(theme=theme, css=css) as demo:
     ex_empty = example_tuple("",1.0, 0.7, 50,"Select a task example above to edit...")
     ex_custom = example_tuple("",1.0, 0.7, 50,"")
 
-    def set_example(adapter):
+    def set_example(usecase):
         interactive_prompt = True
         # Set example inputs (prompt, inference options) for known usecases and custom adapters
-        if adapter in list(usecase_adapter_dict.items()):
-            if "bloom1b1-lora-instruct" in adapter:
+        if usecase in list(usecase_adapter_dict.keys()):
+            if "General Instruction-Following" in usecase:
                 update_tuple = ex_instruct
-            elif "bloom1b1-lora-sql" in adapter:
+            elif "Generate SQL given a question and table" in usecase:
                 update_tuple = ex_sql
-            elif "bloom1b1-lora-toxic" in adapter:
+            elif "Detoxify Statement" in usecase:
                 update_tuple = ex_toxic
-            else:
-               update_tuple = ex_custom
+            elif "Custom" in usecase:
+                update_tuple = ex_custom
         # Clear out inputs when UI is reset
         else:
             interactive_prompt = False
@@ -172,10 +165,11 @@ with gr.Blocks(theme=theme, css=css) as demo:
                 gr.Slider.update(value=update_tuple.max_new_tokens),
                 gr.Textbox.update(value="", visible=True, lines=1),
                 gr.Textbox.update(value="", visible=True, lines=1))
-    import time
+    
     def set_usecase(usecase):
         # Slow user down to highlight changes
         time.sleep(0.5)
+        print(usecase)
         if usecase in usecase_adapter_dict:
            return (gr.Textbox.update(value=usecase_adapter_dict[usecase], visible=True), gr.Button.update(interactive=True))
         else: 
@@ -194,7 +188,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
     
     usecase_select.change(set_usecase, inputs = [usecase_select], outputs=[adapter_select, gen_btn])
 
-    adapter_select.change(set_example, inputs = [adapter_select], outputs=[input_txt, repetition_penalty, temperature, max_new_tokens, output_plain_txt, output_adapter_txt])
+    adapter_select.change(set_example, inputs = [usecase_select], outputs=[input_txt, repetition_penalty, temperature, max_new_tokens, output_plain_txt, output_adapter_txt])
 
     clear_btn.click(disable_gen, queue = False, inputs = [], outputs=[gen_btn]).then(clear_out, queue = False, inputs = [], outputs=[input_txt, repetition_penalty, temperature, max_new_tokens, output_plain_txt, output_adapter_txt, adapter_select, output_adapter_txt, output_plain_txt, usecase_select])
 
