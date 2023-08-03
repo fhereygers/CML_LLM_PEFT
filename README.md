@@ -12,6 +12,7 @@ In this AMP we show you how to implement LLM fine-tuning jobs that make use of t
 The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in [./adapters_prebuilt](./adapters_prebuilt).
 
 ## AMP Requirements
+
 ### CPU
 - CML CPU workloads with resource profiles up to (2 vCPU / 18 GiB Memory) will be provisioned
 ### GPU
@@ -22,10 +23,9 @@ The fine-tuning examples for 3 different tasks are created as CML Jobs that can 
     - Multiple gpus will be required to run fine-tuning examples distributed accross multiple CML: sessopms.
   - Application Inference
     - The task explorer application will require 1 GPU to perform inference
-
-## AMP Setup 
-### Runtime
-Workbench Python 3.9 2023.05 and newer are recommended 
+### CML Runtime
+Workbench - Python 3.9 - Nvidia GPU - 2023.05
+## AMP Setup  
 ### Configurable Options
 **NUM_GPU_WORKERS:** Configurable project environment variable set up for this AMP. This is the number of distributed GPUs that the fine-tuning jobs will make use of during runtime.
 ## AMP Details
@@ -70,12 +70,13 @@ Each included sample adapter is fine-tuned on portions of publicly available dat
 - Dataset: https://huggingface.co/datasets/s-nlp/paradetox (afl-3.0)
   - Contains 19k examples of toxic to neutral wording conversions in english
 
-## Jupyter Notebook Example
-A notebook example is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script.[Notebook Link](fine_tune_sample.ipynb)
+## Implementation
+See detailed implementation descriptions in [distributed_peft_scripts/README.md](./distributed_peft_scripts/README.md)
 
-## Creating Your Own Adapter
-[Link to Guide](./guides/creating-your-own-adapter.md)
+## Jupyter Notebook Example
+
+A [notebook example](fine_tune_sample.ipynb) is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script.
 ### Recommended Runtime
 Jupyter Lab - Python 3.9 - Nvidia GPU - 2023.05
-### Resource Profile
+### Recommended Resource Profile
 2 vCPU / 16 GiB Memory / 1 GPU

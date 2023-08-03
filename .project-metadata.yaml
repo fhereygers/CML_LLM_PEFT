@@ -10,12 +10,11 @@ environment_variables:
   NUM_GPU_WORKERS:
     default: "2"
     description: >-
-      The number of GPUs that will be used for distributed fine-tuning.
-      NOTE: At least this many GPUs must be available for concurrent deployment in this workspace.
+      The number of GPUs that will be used for optional distributed fine-tuning jobs.
   CUSTOM_LORA_ADAPTERS_DIR:
     default: "adapters_custom"
     description: >-
-      The directory containing custom LoRA adapters to load in the Task Explorer app. Also the location to save adapters created by fine-tuning job example reproductions under this Project's Jobs tab.
+      The directory containing the reproduced LoRA adapters created by the fine-tuning jobs in this project. Also the location to look for any custom LoRA adapters.
 
 runtimes:
   - editor: Workbench
