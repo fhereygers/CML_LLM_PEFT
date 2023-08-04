@@ -1,6 +1,6 @@
 # LLM Task Fine-tuning in CML with PEFT
 
-This repository demonstrates how to use PEFT (Parameter-Efficient Fine-Tuning) and distribution techniques to fine-tune open source LLM (Large Language Model) for downstream language tasks.
+This repository demonstrates how to use [PEFT](https://huggingface.co/blog/peft) (Parameter-Efficient Fine-Tuning) and distribution techniques to fine-tune open source LLM (Large Language Model) for downstream language tasks.
 ## Overview
 ### Why Fine-tune a Foundation LLM?
 While foundation LLMs are powerful and can generate very convincing language as a result of expensive and extensive training, they are not always suited for the specific downstream tasks that a generative AI application may require.
@@ -20,7 +20,7 @@ The fine-tuning examples for 3 different tasks are created as CML Jobs that can 
 - 1+ CML GPU workloads with resource profile (2 vCPU / 16 GiB Memory / 1 GPU) will be provisioned
   - Fine-tuning Examples (Optional)
     - A single gpu will run fine-tuning examples only in non-distributed mode
-    - Multiple gpus will be required to run fine-tuning examples distributed accross multiple CML: sessopms.
+    - Multiple gpus will be required to run fine-tuning examples distributed across multiple CML sessions.
   - Application Inference
     - The task explorer application will require 1 GPU to perform inference
 ### CML Runtime
@@ -54,19 +54,22 @@ In this AMP we show how you can use cutting edge fine-tuning techniques to effic
 
 ## Sample Fine-tuned Tasks
 For each the following fine-tuning tasks we start with the *smaller* LLM [bigscience/bloom-1b1](https://huggingface.co/bigscience/bloom-1b1).
+This model was chosen for its tiny size and permissive license for. The small size of this base model results in very short fine-tuning times and portable adapters that are simple to run for anyone looking to try this AMP.
+
+A larger base model or a base model from another family could also be used with all the techniques shown in the scripts and notebook.
 
 Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of trained adapters are production-level models, each are proof of task performance improvement (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)) over the base model even with minimal training time on the scale of minutes.
 
 ### General Instruction Following
-- Training Time/Cost: (8m19s / $0.82)
+- Training Time/Cost: (8m19s / $0.82) distributed on 2x P3.2xlarge AWS instances
 - Dataset: https://huggingface.co/datasets/teknium/GPTeacher-General-Instruct (mit)
   - Contains 89k examples of instruction-input-response text
 ### SQL English to Query
-- Training Time/Cost: (22m11s / $2.21)
+- Training Time/Cost: (22m11s / $2.21) distributed on 2x P3.2xlarge AWS instances
 - Dataset: https://huggingface.co/datasets/philschmid/sql-create-context-copy (cc-by-4.0)
   - Contains 80k examples of Question - Table - SQL text-to-sql strings
 ### Detoxifying English Text
-- Training Time/Cost: (8m50s / $0.86)
+- Training Time/Cost: (8m50s / $0.86) distributed on 2x P3.2xlarge AWS instances
 - Dataset: https://huggingface.co/datasets/s-nlp/paradetox (afl-3.0)
   - Contains 19k examples of toxic to neutral wording conversions in english
 
