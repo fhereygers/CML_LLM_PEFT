@@ -59,7 +59,7 @@ This model was chosen for its tiny size and permissive license for. The small si
 A larger base model or a base model from another LLM family could also be used with the same techniques shown in the scripts and sample notebook in this repository.
 > An update to make this easier to do within this AMP is coming soon!
 
-Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of trained adapters are production-level models, each are proof of task performance improvement (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)) over the base model even with minimal training time on the scale of minutes.
+Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable of production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time on the scale of minutes.
 
 ### General Instruction Following
 - Training Time/Cost: (8m19s / $0.82) distributed on 2x P3.2xlarge AWS instances
@@ -74,11 +74,25 @@ Each included sample adapter is fine-tuned on portions of publicly available dat
 - Dataset: https://huggingface.co/datasets/s-nlp/paradetox (afl-3.0)
   - Contains 19k examples of toxic to neutral wording conversions in english
 
-## Implementation
+## Reproducing the prebuilt adapters
+To see the training jobs running in CML firsthand, just start any of the fine-tuning jobs in the Jobs tab of your project. These will launch fine-tuning with accelerate distributed across multiple CML workers.
+
+Adapters created via these jobs will appear in the Task Explorer Application after a restart and will be prefixed with a `Custom:` label. 
+## Custom fine-tuned adapters
+If you would like to attempt fine-tuning with a different data set or a different data mapping function for the prompt:
+1. Adapt [Jupyter Notebook Example](#jupyter-notebook-example) for a simple fine-tuning script OR [Implementation Details](#implementation-details) for launching distributed fine-tuning with accelerate.
+2. Ensure your fine-tuned adapter is placed in `./adapters_custom`
+3. Restart the Task Explorer Application
+
+> Note: The Task Explorer Application assumes the use of bloom1b1 as the base model, a future update will make it simpler to use a different base model for fine-tuning and inference.
+
+## Task Explorer Application
+The task explorer application in `4_app-task-explorer` loads up all the adapters found in `adapters_prebuilt` and `.adapters_custom`. These are loaded on top of the base model for inference comparison.
+
+## Implementation Details
 See detailed implementation descriptions in [distributed_peft_scripts/README.md](./distributed_peft_scripts/README.md)
 
 ## Jupyter Notebook Example
-
 A [notebook example](fine_tune_sample.ipynb) is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script.
 ### Recommended Runtime
 Jupyter Lab - Python 3.9 - Nvidia GPU - 2023.05
