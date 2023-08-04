@@ -56,7 +56,8 @@ In this AMP we show how you can use cutting edge fine-tuning techniques to effic
 For each the following fine-tuning tasks we start with the *smaller* LLM [bigscience/bloom-1b1](https://huggingface.co/bigscience/bloom-1b1).
 This model was chosen for its tiny size and permissive license for. The small size of this base model results in very short fine-tuning times and portable adapters that are simple to run for anyone looking to try this AMP.
 
-A larger base model or a base model from another family could also be used with all the techniques shown in the scripts and notebook.
+A larger base model or a base model from another LLM family could also be used with the same techniques shown in the scripts and sample notebook in this repository.
+> An update to make this easier to do within this AMP is coming soon!
 
 Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of trained adapters are production-level models, each are proof of task performance improvement (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)) over the base model even with minimal training time on the scale of minutes.
 
