@@ -10,6 +10,7 @@ Fine-tuning to create models suitable for specific tasks is becoming increasingl
 In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface.
 
 The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in [./adapters_prebuilt](./adapters_prebuilt).
+![App Screenshot](images/app-screen.png)
 
 ## AMP Requirements
 
@@ -39,13 +40,14 @@ In this AMP we show how you can use cutting edge fine-tuning techniques to effic
 - ##### QLoRA
   One of the PEFT techniques officially supported in the huggingface library is QLoRA (Quantized Low Rank Adaptation). This fine-tuning technique is the result of two papers, the original [LoRA](https://arxiv.org/abs/2106.09685) and following [QLoRA](https://arxiv.org/abs/2305.14314).
 
-  - LoRA fine-tuning freezes the original model parameters and trains a new small set of parameters with an dataset, at lower memory footprint and time therefore lower cost for still very effective leraning.
+  - LoRA fine-tuning freezes the original model parameters and trains a new small set of parameters with a dataset, at lower memory footprint and time therefore lower cost for still very effective learning. Furthermore, the adapter matrices are a fraction of the size of the base model weights and can be swapped out at inference time without changing the base model weights.
+  ![LoRA Simple Diagram](./images/LoRA-diag.png)*Inference with LoRA as described by the [LoRA paper](https://arxiv.org/abs/2106.09685). During fine-tuning time W is frozen while A and B contain the trainable parameters.*
 
   - QLoRA further increased efficiency, by using a new quantized data type and additional quanitization and memory optimization techniques to further drive the time and cost down.
 
   This allows us to use lower cost GPUs compared to full parameter fine-tuning, while still matching the performance of more intensive and costly full fine-tuning.
 
-  All of the libraries required for configuring and launching QLoRA finetuning are available via from huggingface see [requirements.txt](./requirements.txt).
+  All of the libraries required for configuring and launching QLoRA finetuning are available via from huggingface see [requirements.txt](./requirements.txt). Implementation examples from the huggingface can be founde [here](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
 
 - #### Distributed Training
   Using the PEFT open-source library from Huggingface means we also have easy access to [accelerate](https://github.com/huggingface/accelerate). Another Huggingface library which abstracts away the use of multiple GPUs and machines for fine-tuning jobs. As with many other kinds of distributed workloads, this cuts down on the time to fine-tune dramatically.
@@ -59,7 +61,7 @@ This model was chosen for its tiny size and permissive license for. The small si
 A larger base model or a base model from another LLM family could also be used with the same techniques shown in the scripts and sample notebook in this repository.
 > An update to make this easier to do within this AMP is coming soon!
 
-Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable of production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time on the scale of minutes.
+Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable of production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time on the scale of minutes. Additionaly the use of separate adapters means that in the Task Explorer application only a single copy of the Base Model is loaded, allowing for on-demand swapping of task fine-tuned adapters.
 
 ### General Instruction Following
 - Training Time/Cost: (8m19s / $0.82) distributed on 2x P3.2xlarge AWS instances
