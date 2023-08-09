@@ -5,9 +5,9 @@ This repository demonstrates how to use [PEFT](https://huggingface.co/blog/peft)
 ### Why Fine-tune a Foundation LLM?
 While foundation LLMs are powerful and can generate very convincing language as a result of expensive and extensive training, they are not always suited for the specific downstream tasks that a generative AI application may require.
 
-Fine-tuning to create models suitable for specific tasks is becoming increasingly more accessible, in the [QLoRA (Quantized Low-Rank Adaptation) Paper](https://arxiv.org/abs/2305.14314), researchers were able to finetune a 65B parameter model on a Single 48GB GPU while reaching 99% of the performance level of ChatGPT compared to the 780GB of GPU memory required to perform full 16-bit finetuning techniques. This means a cost difference of over 16x in baremetal GPU alone. 
+Fine-tuning to create models suitable for specific tasks is becoming increasingly more accessible. In the [QLoRA (Quantized Low-Rank Adaptation) Paper](https://arxiv.org/abs/2305.14314), researchers were able to finetune a 65B parameter model on a Single 48GB GPU while reaching 99% of the performance level of ChatGPT compared to the 780GB of GPU memory required to perform full 16-bit finetuning techniques. This means a cost difference of over 16x in baremetal GPU alone. 
 ## AMP Overview
-In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface.
+In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface and an example application that swaps the fine-tuned adapters in real time for inference targetting different tasks.
 
 The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in [./adapters_prebuilt](./adapters_prebuilt).
 ![App Screenshot](images/app-screen.png)
@@ -28,7 +28,7 @@ The fine-tuning examples for 3 different tasks are created as CML Jobs that can 
 Workbench - Python 3.9 - Nvidia GPU - 2023.05
 ## AMP Setup  
 ### Configurable Options
-**NUM_GPU_WORKERS:** Configurable project environment variable set up for this AMP. This is the number of distributed GPUs that the fine-tuning jobs will make use of during runtime.
+**NUM_GPU_WORKERS:** Configurable project environment variable set up for this AMP. This is the total number of distributed GPUs that the fine-tuning jobs will make use of during runtime. (Each individual fine-tuning worker will use a single GPU)
 ## AMP Details
 ### Fine-tuning optimization techniques
 In this AMP we show how you can use cutting edge fine-tuning techniques to effictiently produce adapters finetuned for language tasks in CML.
@@ -52,16 +52,16 @@ In this AMP we show how you can use cutting edge fine-tuning techniques to effic
 - #### Distributed Training
   Using the PEFT open-source library from Huggingface means we also have easy access to [accelerate](https://github.com/huggingface/accelerate). Another Huggingface library which abstracts away the use of multiple GPUs and machines for fine-tuning jobs. As with many other kinds of distributed workloads, this cuts down on the time to fine-tune dramatically.
 
-  CML can is able to run accelerate distributed fine-tuning workloads out of the box using the [CML Workers API](https://docs.cloudera.com/machine-learning/cloud/distributed-computing/topics/ml-workers-api.html)
+  CML is able to run accelerate distributed fine-tuning workloads out of the box using the [CML Workers API](https://docs.cloudera.com/machine-learning/cloud/distributed-computing/topics/ml-workers-api.html)
 
 ## Sample Fine-tuned Tasks
 For each the following fine-tuning tasks we start with the *smaller* LLM [bigscience/bloom-1b1](https://huggingface.co/bigscience/bloom-1b1).
-This model was chosen for its tiny size and permissive license for. The small size of this base model results in very short fine-tuning times and portable adapters that are simple to run for anyone looking to try this AMP.
+This model was chosen for its tiny size and permissive license for commercial and research uses. The small size of this base model results in very short fine-tuning times and portable adapters that are simple to run for anyone looking to try this AMP (at the cost of poorer general performance.)
 
 A larger base model or a base model from another LLM family could also be used with the same techniques shown in the scripts and sample notebook in this repository.
 > An update to make this easier to do within this AMP is coming soon!
 
-Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable of production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time on the scale of minutes. Additionaly the use of separate adapters means that in the Task Explorer application only a single copy of the Base Model is loaded, allowing for on-demand swapping of task fine-tuned adapters.
+Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable enough for production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time on the scale of minutes. Additionaly the use of separate adapters means that in the Task Explorer application only a single copy of the Base Model is loaded, allowing for on-demand swapping of task fine-tuned adapters.
 
 ### General Instruction Following
 - Training Time/Cost: (8m19s / $0.82) distributed on 2x P3.2xlarge AWS instances
