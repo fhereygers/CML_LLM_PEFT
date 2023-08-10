@@ -1,6 +1,12 @@
 import os
-import cdsw
 import requests
+
+try:
+    # Launch workers when using CML
+    from cml.workers_v1 import launch_workers
+except ImportError:
+    # Launch workers when using CDSW
+    from cdsw import launch_workers
 
 try:
     NUM_GPU_WORKERS = int(os.getenv("NUM_GPU_WORKERS"))
@@ -39,7 +45,7 @@ def check_gpu_enabled():
 # Check that there are available GPUs or autoscalable GPUs available
 def check_gpu_launch():
     # Launch a worker that uses GPU to see if any gpu is available or autoscaling is possible
-    worker = cdsw.launch_workers(
+    worker = launch_workers(
         n=NUM_GPU_WORKERS, cpu=2, memory=4, nvidia_gpu=1, code="print('GPU Available')"
     )
 
