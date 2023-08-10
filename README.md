@@ -1,31 +1,13 @@
-# LLM Task Fine-tuning in CML with PEFT
+# Fine-Tuning a foundation model for multiple tasks (with QLoRA)
 
 This repository demonstrates how to use [PEFT](https://huggingface.co/blog/peft) (Parameter-Efficient Fine-Tuning) and distribution techniques to fine-tune open source LLM (Large Language Model) for downstream language tasks.
-## Overview
-### Why Fine-tune a Foundation LLM?
-While foundation LLMs are powerful and can generate very convincing language as a result of expensive and extensive training, they are not always suited for the specific downstream tasks that a generative AI application may require.
 
-Fine-tuning to create models suitable for specific tasks is becoming increasingly more accessible. In the [QLoRA (Quantized Low-Rank Adaptation) Paper](https://arxiv.org/abs/2305.14314), researchers were able to finetune a 65B parameter model on a Single 48GB GPU while reaching 99% of the performance level of ChatGPT compared to the 780GB of GPU memory required to perform full 16-bit finetuning techniques. This means a cost difference of over 16x in baremetal GPU alone. 
 ## AMP Overview
 In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface and an example application that swaps the fine-tuned adapters in real time for inference targetting different tasks.
 
 The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in [./adapters_prebuilt](./adapters_prebuilt).
 ![App Screenshot](images/app-screen.png)
 
-## AMP Requirements
-
-### CPU
-- CML CPU workloads with resource profiles up to (2 vCPU / 18 GiB Memory) will be provisioned
-### GPU
--  Minimum of nVidia V100 with 16GB vram is required (AWS p3.2xlarge)
-- 1+ CML GPU workloads with resource profile (2 vCPU / 16 GiB Memory / 1 GPU) will be provisioned
-  - Fine-tuning Examples (Optional)
-    - A single gpu will run fine-tuning examples only in non-distributed mode
-    - Multiple gpus will be required to run fine-tuning examples distributed across multiple CML sessions.
-  - Application Inference
-    - The task explorer application will require 1 GPU to perform inference
-### CML Runtime
-Workbench - Python 3.9 - Nvidia GPU - 2023.05
 ## AMP Setup  
 ### Configurable Options
 **NUM_GPU_WORKERS:** Configurable project environment variable set up for this AMP. This is the total number of distributed GPUs that the fine-tuning jobs will make use of during runtime. (Each individual fine-tuning worker will use a single GPU)
@@ -94,9 +76,23 @@ The task explorer application in `4_app-task-explorer` loads up all the adapters
 ## Implementation Details
 See detailed implementation descriptions in [distributed_peft_scripts/README.md](./distributed_peft_scripts/README.md)
 
-## Jupyter Notebook Example
+## AMP Requirements
+
+### CPU
+- CML CPU workloads with resource profiles up to (2 vCPU / 18 GiB Memory) will be provisioned
+### GPU
+-  Minimum of nVidia V100 with 16GB vram is required (AWS p3.2xlarge)
+- 1+ CML GPU workloads with resource profile (2 vCPU / 16 GiB Memory / 1 GPU) will be provisioned
+  - Fine-tuning Examples (Optional)
+    - A single gpu will run fine-tuning examples only in non-distributed mode
+    - Multiple gpus will be required to run fine-tuning examples distributed across multiple CML sessions.
+  - Application Inference
+    - The task explorer application will require 1 GPU to perform inference
+### CML Runtime
+PBJ Workbench - Python 3.9 - Nvidia GPU - 2023.05
+# Jupyter Notebook Example
 A [notebook example](fine_tune_sample.ipynb) is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script.
 ### Recommended Runtime
-Jupyter Lab - Python 3.9 - Nvidia GPU - 2023.05
+PBJ Workbench - Python 3.9 - Nvidia GPU - 2023.05
 ### Recommended Resource Profile
 2 vCPU / 16 GiB Memory / 1 GPU

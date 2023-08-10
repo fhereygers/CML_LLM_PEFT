@@ -17,7 +17,7 @@ environment_variables:
       The directory containing the reproduced LoRA adapters created by the fine-tuning jobs in this project. Also the location to look for any custom LoRA adapters.
 
 runtimes:
-  - editor: Workbench
+  - editor: PBJ Workbench
     kernel: Python 3.9
     edition: Nvidia GPU
 
