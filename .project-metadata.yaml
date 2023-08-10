@@ -50,7 +50,7 @@ tasks:
     gpu: 1
 
   - type: create_job
-    name: Job for fine-tuning on Instruction Dataset
+    name: Job for distributed fine-tuning on Instruction Dataset
     short_summary: Create Job for fine-tuning on Instruction Dataset
     entity_label: fine_tune_instruct
     script: amp_3_job_fine_tune/job-instruction.py
@@ -63,7 +63,7 @@ tasks:
       TASK_TYPE: CREATE/RUN_JOB
 
   - type: create_job
-    name: Job for fine-tuning on SQL Generation Dataset
+    name: Job for distributed fine-tuning on SQL Generation Dataset
     short_summary: Create Job for fine-tuning on SQL Generation Dataset
     entity_label: fine_tune_sql
     script: amp_3_job_fine_tune/job-sql.py
@@ -76,7 +76,7 @@ tasks:
       TASK_TYPE: CREATE/RUN_JOB
 
   - type: create_job
-    name: Job for fine-tuning on Detox Dataset
+    name: Job for distributed fine-tuning on Detox Dataset
     short_summary: Create Job for fine-tuning on Detox Dataset
     entity_label: fine_tune_detox
     script: amp_3_job_fine_tune/job-detox.py
