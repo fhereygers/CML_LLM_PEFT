@@ -8,7 +8,7 @@ from glob import glob
 from collections import namedtuple 
 
 
-PREBUILT_LORA_ADAPTERS_DIR = "adapters_prebuilt"
+PREBUILT_LORA_ADAPTERS_DIR = "amp_adapters_prebuilt"
 if os.path.exists(PREBUILT_LORA_ADAPTERS_DIR):
   print("Found prebuilt adapters dir")
   
@@ -29,7 +29,7 @@ all_lora_adapter_dirs = prebuilt_lora_adapter_dirs + custom_lora_adapter_dirs
 # Custom adapters located in CUSTOM_LORA_ADAPTERS_DIR will be appended to this list as Custom Adapter: [adapter-dir-name]
 # Custom adapters will not have sample engineered prompts autofilled
 
-usecase_adapter_dict = {"General Instruction-Following":"adapters_prebuilt/bloom1b1-lora-instruct/", "Generate SQL given a question and table":"adapters_prebuilt/bloom1b1-lora-sql/", "Detoxify Statement":"adapters_prebuilt/bloom1b1-lora-toxic/"}
+usecase_adapter_dict = {"General Instruction-Following":"amp_adapters_prebuilt/bloom1b1-lora-instruct/", "Generate SQL given a question and table":"amp_adapters_prebuilt/bloom1b1-lora-sql/", "Detoxify Statement":"amp_adapters_prebuilt/bloom1b1-lora-toxic/"}
 for custom_adapter in custom_lora_adapter_dirs:
    usecase_adapter_dict["Custom Adapter: %s" % custom_adapter] = custom_adapter
 

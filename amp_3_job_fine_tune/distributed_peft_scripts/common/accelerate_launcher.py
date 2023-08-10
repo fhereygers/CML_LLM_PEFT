@@ -26,9 +26,9 @@ def launch_distributed_script(tune_script):
   # Create the config files used for launching Accelerate
   print("Set up Accelerate config files for distributed fine-tuning...")
   if NUM_GPU_WORKERS == 1:
-    text_file = open("distributed_peft_scripts/common/accelerate_configs/accelerate_single_config.yaml.tmpl")
+    text_file = open("amp_3_job_fine_tune/distributed_peft_scripts/common/accelerate_configs/accelerate_single_config.yaml.tmpl")
   elif NUM_GPU_WORKERS > 1:
-    text_file = open("distributed_peft_scripts/common/accelerate_configs/accelerate_multi_config.yaml.tmpl")
+    text_file = open("amp_3_job_fine_tune/distributed_peft_scripts/common/accelerate_configs/accelerate_multi_config.yaml.tmpl")
   else:
     sys.exit(
         "Invalid number of GPUs for fine-tuning selected: NUM_GPU_WORKERS = %d" % NUM_GPU_WORKERS

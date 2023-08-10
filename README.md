@@ -5,7 +5,7 @@ This repository demonstrates how to use [PEFT](https://huggingface.co/blog/peft)
 ## AMP Overview
 In this AMP we show you how to implement LLM fine-tuning jobs that make use of the QLoRA and Accelerate implementations available in the PEFT open-source library from Huggingface and an example application that swaps the fine-tuned adapters in real time for inference targetting different tasks.
 
-The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in [./adapters_prebuilt](./adapters_prebuilt).
+The fine-tuning examples for 3 different tasks are created as CML Jobs that can be run to reproduce the sample model adapters included in this AMP repo in [./amp_adapters_prebuilt](./amp_adapters_prebuilt).
 ![App Screenshot](images/app-screen.png)
 
 ## AMP Setup  
@@ -65,13 +65,13 @@ Adapters created via these jobs will appear in the Task Explorer Application aft
 ## Custom fine-tuned adapters
 If you would like to attempt fine-tuning with a different data set or a different data mapping function for the prompt:
 1. Adapt [Jupyter Notebook Example](#jupyter-notebook-example) for a simple fine-tuning script OR [Implementation Details](#implementation-details) for launching distributed fine-tuning with accelerate.
-2. Ensure your fine-tuned adapter is placed in `./adapters_custom`
+2. Ensure your fine-tuned adapter is placed in `amp_adapters_custom`
 3. Restart the Task Explorer Application
 
 > Note: The Task Explorer Application assumes the use of bloom1b1 as the base model, a future update will make it simpler to use a different base model for fine-tuning and inference.
 
 ## Task Explorer Application
-The task explorer application in `4_app-task-explorer` loads up all the adapters found in `adapters_prebuilt` and `.adapters_custom`. These are loaded on top of the base model for inference comparison.
+The task explorer application in `4_app-task-explorer` loads up all the adapters found in `amp_adapters_prebuilt` and `amp_adapters_custom`. These are loaded on top of the base model for inference comparison.
 
 ## Implementation Details
 See detailed implementation descriptions in [distributed_peft_scripts/README.md](./distributed_peft_scripts/README.md)

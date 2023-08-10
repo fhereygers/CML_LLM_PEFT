@@ -12,7 +12,7 @@ environment_variables:
     description: >-
       The number of GPUs that will be used for optional distributed fine-tuning jobs. Default: 2
   CUSTOM_LORA_ADAPTERS_DIR:
-    default: "adapters_custom"
+    default: "amp_adapters_custom"
     description: >-
       The directory containing the reproduced LoRA adapters created by the fine-tuning jobs in this project. Also the location to look for any custom LoRA adapters.
 
@@ -24,7 +24,7 @@ runtimes:
 tasks:
   - type: run_session
     name: Validate GPU Availibility in this workspace
-    script: 0_session-configuration-validation/check_gpu_resources.py
+    script: amp_0_session-configuration-validation/check_gpu_resources.py
     short_summary: Check for GPU availibility. 
     long_summary: Check GPUs are enabled on this workspace and are currently schedulable.
     kernel: python3
@@ -33,7 +33,7 @@ tasks:
 
   - type: run_session
     name: Install Dependencies
-    script: 1_session-install-deps/install-requirements.py
+    script: amp_1_session-install-deps/install-requirements.py
     short_summary: Install Dependencies
     kernel: python3
     cpu: 2
@@ -41,7 +41,7 @@ tasks:
   
   - type: run_session
     name: Validate GPU CUDA Capability
-    script: 2_session-resource-validation/check_gpu_capability.py
+    script: amp_2_session-resource-validation/check_gpu_capability.py
     short_summary: Check for GPU capability. 
     long_summary: Check GPU device supports the CUDA capabilities required.
     kernel: python3
@@ -53,7 +53,7 @@ tasks:
     name: Job for fine-tuning on Instruction Dataset
     short_summary: Create Job for fine-tuning on Instruction Dataset
     entity_label: fine_tune_instruct
-    script: 3_job-fine-tune/job-instruction.py
+    script: amp_3_job_fine_tune/job-instruction.py
     arguments: None
     long_summary: Create job to fine-tune an LLM on a subset of the teknium/GPTeacher-General-Instruct dataset. This job will not be automatically launched during AMP startup. A sample LoRA adapter fine-tuned with this job script and dataset is included in the git repository.
     cpu: 2
@@ -66,7 +66,7 @@ tasks:
     name: Job for fine-tuning on SQL Generation Dataset
     short_summary: Create Job for fine-tuning on SQL Generation Dataset
     entity_label: fine_tune_sql
-    script: 3_job-fine-tune/job-sql.py
+    script: amp_3_job_fine_tune/job-sql.py
     arguments: None
     long_summary: Create job to fine-tune an LLM on the philschmid sql-create-context-copy dataset. This job will not be automatically launched during AMP startup. A sample LoRA adapter fine-tuned with this job script and dataset is included in the git repository.
     cpu: 2
@@ -79,7 +79,7 @@ tasks:
     name: Job for fine-tuning on Detox Dataset
     short_summary: Create Job for fine-tuning on Detox Dataset
     entity_label: fine_tune_detox
-    script: 3_job-fine-tune/job-detox.py
+    script: amp_3_job_fine_tune/job-detox.py
     arguments: None
     long_summary: Create job to fine-tune an LLM on the s-nlp/paradetox dataset. This job will not be automatically launched during AMP startup. A sample LoRA adapter fine-tuned with this job script and dataset is included in the git repository.
     cpu: 2
