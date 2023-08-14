@@ -43,7 +43,11 @@ This model was chosen for its tiny size and permissive license for commercial an
 A larger base model or a base model from another LLM family could also be used with the same techniques shown in the scripts and sample notebook in this repository.
 > An update to make this easier to do within this AMP is coming soon!
 
-Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable enough for production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time on the scale of minutes. Additionaly the use of separate adapters means that in the Task Explorer application only a single copy of the Base Model is loaded, allowing for on-demand swapping of task fine-tuned adapters.
+Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable enough for production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time by making use of the PEFT techniques described above.
+![](images/fine-tune-adapters.png)
+
+
+The use of separate adapters means that in the Task Explorer application only a single copy of the Base Model is loaded, allowing for on-demand swapping of task fine-tuned adapters.
 ![](images/adapter-swap.gif)
 
 ### General Instruction Following
