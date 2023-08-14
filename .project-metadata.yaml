@@ -91,7 +91,7 @@ tasks:
   - type: start_application
     name: CML LLM Fine-Tuned Task Explorer
     subdomain: cml-task
-    script: 4_app-task-explorer/task-explorer.py
+    script: amp_4_app-task-explorer/task-explorer.py
     long_summary: This application requires an available GPU to run the LLM model and LoRA adapters.
     cpu: 2
     memory: 16

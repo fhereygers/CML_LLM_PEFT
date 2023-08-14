@@ -44,6 +44,7 @@ A larger base model or a base model from another LLM family could also be used w
 > An update to make this easier to do within this AMP is coming soon!
 
 Each included sample adapter is fine-tuned on portions of publicly available datasets that have been mapped to fit desired inference patterns. While none of the included trained adapters are capable enough for production applications (* see [Improving on the Sample Adapters](#improving-on-the-sample-adapters)), each demonstrates clear task performance improvement over the base model with minimal training time on the scale of minutes. Additionaly the use of separate adapters means that in the Task Explorer application only a single copy of the Base Model is loaded, allowing for on-demand swapping of task fine-tuned adapters.
+![](adapter-swapping.gif)
 
 ### General Instruction Following
 - Training Time/Cost: (8m19s / $0.82) distributed on 2x P3.2xlarge AWS instances
