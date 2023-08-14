@@ -3,10 +3,10 @@ import requests
 
 try:
     # Launch workers when using CML
-    from cml.workers_v1 import launch_workers
+    from cml.workers_v1 import launch_workers, await_workers
 except ImportError:
     # Launch workers when using CDSW
-    from cdsw import launch_workers
+    from cdsw import launch_workers, await_workers
 
 try:
     NUM_GPU_WORKERS = int(os.getenv("NUM_GPU_WORKERS"))
@@ -50,7 +50,7 @@ def check_gpu_launch():
     )
 
     # Wait for 10 minutes to see if worker pod reaches success state
-    worker_schedule_status = cdsw.await_workers(
+    worker_schedule_status = await_workers(
         worker, wait_for_completion=True, timeout_seconds=600
     )
     if len(worker_schedule_status["failures"]) == 1:

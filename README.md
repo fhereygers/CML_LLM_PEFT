@@ -1,4 +1,4 @@
-# Fine-Tuning a foundation model for multiple tasks (with QLoRA)
+# Fine-Tuning a Foundation Model for Multiple Tasks (with QLoRA)
 
 This repository demonstrates how to use [PEFT](https://huggingface.co/blog/peft) (Parameter-Efficient Fine-Tuning) and distribution techniques to fine-tune open source LLM (Large Language Model) for downstream language tasks.
 

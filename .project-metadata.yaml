@@ -1,4 +1,4 @@
-name: Parameter Efficient Fine Tuning for Custom Tasks
+name: Fine-Tuning a foundation model for multiple tasks (with QLoRA)
 description: |
   This AMP demonstrates how PEFT and other fine-tuning optimization techniques can be used for efficient and effective customization of an existing LLM to perform new tasks.
 author: Cloudera Inc.
