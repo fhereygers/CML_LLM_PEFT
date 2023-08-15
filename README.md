@@ -95,9 +95,18 @@ See detailed implementation descriptions in [distributed_peft_scripts/README.md]
     - The task explorer application will require 1 GPU to perform inference
 ### CML Runtime
 PBJ Workbench - Python 3.9 - Nvidia GPU - 2023.05
-# Jupyter Notebook Example
-A [notebook example](fine_tune_sample.ipynb) is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script.
+# Jupyter Notebook Examples
+## QLoRA Fine-tuning example
+A [notebook example](notebook_local_fine_tune_sample.ipynb) is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script.
 ### Recommended Runtime
 PBJ Workbench - Python 3.9 - Nvidia GPU - 2023.05
 ### Recommended Resource Profile
 2 vCPU / 16 GiB Memory / 1 GPU
+
+## QLoRA Fine-tuning example
+A [notebook example](notebook_accelerate_distributed_fine_tune_sample..ipynb) is provided to demonstrate what accelerate distributed training (fine-tuning) looks like in CML using the CML Workers API.
+### Recommended Runtime
+JupyterLab - Python 3.9 - Nvidia GPU - 2023.05
+### Recommended Resource Profile
+2 vCPU / 16 GiB Memory / 1 GPU
++ 1 additional GPU for disctributed worker
