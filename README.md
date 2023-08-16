@@ -96,6 +96,8 @@ See detailed implementation descriptions in [distributed_peft_scripts/README.md]
 ### CML Runtime
 PBJ Workbench - Python 3.9 - Nvidia GPU - 2023.05
 # Jupyter Notebook Examples
+We have included notebook examples that demonstrate the code in the rest of the AMP project in a more digestible manner.
+
 ## QLoRA Fine-tuning example
 A [notebook example](notebook_local_fine_tune_sample.ipynb) is provided to demonstrate what the fine-tuning techniques and libraries look like in a single script.
 ### Recommended Runtime
