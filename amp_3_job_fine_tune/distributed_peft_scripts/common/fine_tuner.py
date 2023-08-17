@@ -19,10 +19,11 @@ class AMPFineTuner:
 
     # Load basemodel from huggingface
     # Default: bigscience/bloom-1b1
-    def __init__(self, base_model):
+    def __init__(self, base_model, auth_token = ""):
+
         # Load the base model and tokenizer
         print("Load the base model and tokenizer...\n")
-        self.tokenizer = AutoTokenizer.from_pretrained(base_model)
+        self.tokenizer = AutoTokenizer.from_pretrained(base_model, use_auth_token = auth_token)
 
         self.tokenizer.pad_token = self.tokenizer.eos_token
         compute_dtype = getattr(torch, "float16")
@@ -39,6 +40,7 @@ class AMPFineTuner:
             base_model, 
             quantization_config=bnb_config,
             device_map='auto',
+            use_auth_token = auth_token,
         )
 
         # transformers.TrainingArguments defaults
@@ -76,14 +78,15 @@ class AMPFineTuner:
         self.model = get_peft_model(self.model, self.lora_config)
     
     # Train/Fine-tune model with SFTTrainer and a provided dataset
-    def train(self, tuning_data, dataset_text_field, output_dir):
+    def train(self, tuning_data, dataset_text_field, output_dir, packing = True, max_seq_length = 1024):
         trainer = SFTTrainer(
             model=self.model, 
             train_dataset=tuning_data,
             peft_config=self.lora_config,
             tokenizer=self.tokenizer,
             dataset_text_field = dataset_text_field,
-            packing=True,
+            packing=packing,
+            max_seq_length=max_seq_length,
             args=self.training_args,
             data_collator=DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
         )
