@@ -8,6 +8,7 @@ from glob import glob
 from collections import namedtuple 
 
 
+BASE_MODEL = "bigscience/bloom-1b1"
 PREBUILT_LORA_ADAPTERS_DIR = "amp_adapters_prebuilt"
 if os.path.exists(PREBUILT_LORA_ADAPTERS_DIR):
   print("Found prebuilt adapters dir")
@@ -20,8 +21,8 @@ if os.path.exists(CUSTOM_LORA_ADAPTERS_DIR):
   
 custom_lora_adapter_dirs = glob(CUSTOM_LORA_ADAPTERS_DIR+"/*/", recursive = False)
 
-model = AutoModelForCausalLM.from_pretrained("bigscience/bloom-1b1", return_dict=True, device_map='auto')
-tokenizer = AutoTokenizer.from_pretrained("bigscience/bloom-1b1")
+model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, return_dict=True, device_map='auto')
+tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
 
 all_lora_adapter_dirs = prebuilt_lora_adapter_dirs + custom_lora_adapter_dirs
 
@@ -45,25 +46,43 @@ for adapter in all_lora_adapter_dirs:
 
 loaded_adapters = list(model.peft_config.keys())
 
-def generate(prompt, max_new_tokens, temperature, repetition_penalty):
+def generate(prompt, max_new_tokens, temperature, repetition_penalty, num_beams, top_p, top_k):
   batch = tokenizer(prompt, return_tensors='pt')
   with torch.cuda.amp.autocast():
-    output_tokens = model.generate(**batch, max_new_tokens=max_new_tokens, repetition_penalty=repetition_penalty,temperature=temperature )
+    output_tokens = model.generate(**batch,
+                                    max_new_tokens=max_new_tokens,
+                                    repetition_penalty=repetition_penalty,
+                                    temperature=temperature,
+                                    num_beams=num_beams,
+                                    top_p=top_p,
+                                    top_k=top_k)
   prompt_length = len(prompt)
   return tokenizer.decode(output_tokens[0], skip_special_tokens=True)[prompt_length:]
 
-def get_responses(adapter_select, prompt, max_new_tokens, temperature, repetition_penalty):
+def get_responses(adapter_select, prompt, max_new_tokens, temperature, repetition_penalty, num_beams, top_p, top_k):
   # Using this syntax to ensure inference without adapter
   # https://github.com/huggingface/peft/issues/430
   with model.disable_adapter():
-    base_generation = generate(prompt, max_new_tokens, temperature, repetition_penalty)
+    base_generation = generate(prompt,
+                                max_new_tokens,
+                                temperature,
+                                repetition_penalty,
+                                num_beams,
+                                top_p,
+                                top_k)
   
   model.set_adapter(adapter_select)
 
   if "None" in  adapter_select:
     lora_generation = ""
   else:
-    lora_generation = generate(prompt, max_new_tokens, temperature, repetition_penalty)
+    lora_generation = generate(prompt,
+                               max_new_tokens,
+                               temperature,
+                               repetition_penalty,
+                               num_beams,
+                               top_p,
+                               top_k)
   print("Generating with  PEFT Adapter: %s" % adapter_select)
   return (gr.Textbox.update(value=base_generation, visible=True,  lines=10), gr.Textbox.update(value=lora_generation, visible=True,  lines=10))
 
@@ -100,8 +119,8 @@ with gr.Blocks(theme=theme, css=css) as demo:
                                         label="Max New Tokens",
                                     )
                                     num_beams = gr.Slider(
-                                        minimum=1, maximum=10, step=1, value=1,interactive=False,
-                                        label="Num Beams (wip)",
+                                        minimum=1, maximum=10, step=1, value=1,
+                                        label="Num Beams",
                                     )
                                     repetition_penalty = gr.Slider(
                                         minimum=0.01, maximum=4.5, step=0.01, value=1.1,
@@ -115,13 +134,13 @@ with gr.Blocks(theme=theme, css=css) as demo:
                                     )
 
                                     top_p = gr.Slider(
-                                        minimum=0, maximum=1, step=0.01, value=1.0, interactive=False,
-                                        label="Top P (wip)",
+                                        minimum=0, maximum=1.0, step=0.01, value=1.0,
+                                        label="Top P", interactive = True,
                                     )
 
                                     top_k = gr.Slider(
-                                        minimum=0, maximum=200, step=1, value=0, interactive=False,
-                                        label="Top K (wip)",
+                                        minimum=0, maximum=200, step=1, value=0,
+                                        label="Top K",
                                     )
                         with gr.Row():
                             gen_btn = gr.Button(value="Generate", variant="primary", interactive=False)
@@ -134,13 +153,13 @@ with gr.Blocks(theme=theme, css=css) as demo:
                         
              
 
-    examples_params_list= [input_txt, repetition_penalty, temperature, max_new_tokens]
-    example_tuple = namedtuple("example_named",["input_txt", "repetition_penalty", "temperature", "max_new_tokens", "placeholder_txt"])
-    ex_instruct = example_tuple("<Instruction>: Answer the question using the provided input, be concise. How does CML unify self-service data science and data engineering?\n\n<Input>: Cloudera Machine Learning is Cloudera’s cloud-native machine learning platform built for CDP. Cloudera Machine Learning unifies self-service data science and data engineering in a single, portable service as part of an enterprise data cloud for multi-function analytics on data anywhere.\n\n<Response>:", 0.99, 0.75, 33, "")
-    ex_sql = example_tuple("<TABLE>: CREATE TABLE jedi (id VARCHAR, lightsaber_color VARCHAR)\n<QUESTION>: Give me a list of jedi that have gold color lightsabers.\n<SQL>: ", 1.15, 0.8, 14, "")
-    ex_toxic = example_tuple("<Toxic>: I hate Obi Wan, he always craps on me about the dark side of the force.\n<Neutral>: ", 1.22, 0.75, 19, "")
-    ex_empty = example_tuple("",1.0, 0.7, 50,"Select a task example above to edit...")
-    ex_custom = example_tuple("",1.0, 0.7, 50,"")
+    examples_params_list= [input_txt, repetition_penalty, temperature, max_new_tokens, num_beams, top_p, top_k]
+    example_tuple = namedtuple("example_named",["input_txt", "repetition_penalty", "temperature", "max_new_tokens", "num_beams", "top_p","top_k", "placeholder_txt"])
+    ex_instruct = example_tuple("<Instruction>: Answer the question using the provided input, be concise. How does CML unify self-service data science and data engineering?\n\n<Input>: Cloudera Machine Learning is Cloudera’s cloud-native machine learning platform built for CDP. Cloudera Machine Learning unifies self-service data science and data engineering in a single, portable service as part of an enterprise data cloud for multi-function analytics on data anywhere.\n\n<Response>:", 0.99, 0.75, 33, 1, 1.0, 0, "")
+    ex_sql = example_tuple("<TABLE>: CREATE TABLE jedi (id VARCHAR, lightsaber_color VARCHAR)\n<QUESTION>: Give me a list of jedi that have gold color lightsabers.\n<SQL>: ", 1.15, 0.8, 14, 1, 1.0, 0, "")
+    ex_toxic = example_tuple("<Toxic>: I hate Obi Wan, he always craps on me about the dark side of the force.\n<Neutral>: ", 1.22, 0.75, 19, 1, 1.0, 0, "")
+    ex_empty = example_tuple("",1.0, 0.7, 50, 1, 1.0, 0, "Select a task example above to edit...")
+    ex_custom = example_tuple("",1.0, 0.7, 50, 1, 1.0, 0, "")
 
     def set_example(usecase):
         interactive_prompt = True
@@ -163,6 +182,9 @@ with gr.Blocks(theme=theme, css=css) as demo:
                 gr.Slider.update(value=update_tuple.repetition_penalty),
                 gr.Slider.update(value=update_tuple.temperature),
                 gr.Slider.update(value=update_tuple.max_new_tokens),
+                gr.Slider.update(value=update_tuple.num_beams),
+                gr.Slider.update(value=update_tuple.top_p),
+                gr.Slider.update(value=update_tuple.top_k),
                 gr.Textbox.update(value="", visible=True, lines=1),
                 gr.Textbox.update(value="", visible=True, lines=1))
     
@@ -188,11 +210,11 @@ with gr.Blocks(theme=theme, css=css) as demo:
     
     usecase_select.change(set_usecase, inputs = [usecase_select], outputs=[adapter_select, gen_btn])
 
-    adapter_select.change(set_example, inputs = [usecase_select], outputs=[input_txt, repetition_penalty, temperature, max_new_tokens, output_plain_txt, output_adapter_txt])
+    adapter_select.change(set_example, inputs = [usecase_select], outputs=[input_txt, repetition_penalty, temperature, max_new_tokens, num_beams, top_p, top_k, output_plain_txt, output_adapter_txt])
 
-    clear_btn.click(disable_gen, queue = False, inputs = [], outputs=[gen_btn]).then(clear_out, queue = False, inputs = [], outputs=[input_txt, repetition_penalty, temperature, max_new_tokens, output_plain_txt, output_adapter_txt, adapter_select, output_adapter_txt, output_plain_txt, usecase_select])
+    clear_btn.click(disable_gen, queue = False, inputs = [], outputs=[gen_btn]).then(clear_out, queue = False, inputs = [], outputs=[input_txt, repetition_penalty, temperature, max_new_tokens, num_beams, top_p, top_k, output_plain_txt, output_adapter_txt, adapter_select, output_adapter_txt, output_plain_txt, usecase_select])
 
-    gen_btn.click(show_outputs, inputs = [], outputs=[output_plain_txt,output_adapter_txt]).then(get_responses, inputs=[adapter_select, input_txt, max_new_tokens, temperature, repetition_penalty],
+    gen_btn.click(show_outputs, inputs = [], outputs=[output_plain_txt,output_adapter_txt]).then(get_responses, inputs=[adapter_select, input_txt, max_new_tokens, temperature, repetition_penalty, num_beams, top_p, top_k],
                         outputs=[output_plain_txt,output_adapter_txt])
 
 demo.launch(server_port=int(os.getenv('CDSW_APP_PORT')),

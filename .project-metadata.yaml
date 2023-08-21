@@ -10,7 +10,7 @@ environment_variables:
   NUM_GPU_WORKERS:
     default: "2"
     description: >-
-      The number of GPUs that will be used for optional distributed fine-tuning jobs. Default: 2
+      The total number of GPUs that will be used for the optional distributed fine-tuning jobs. If 1 is set, fine-tuning will happen on a single container only without distribution. Default: 2
   CUSTOM_LORA_ADAPTERS_DIR:
     default: "amp_adapters_custom"
     description: >-
